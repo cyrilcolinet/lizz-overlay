@@ -8,6 +8,7 @@
 # include "debug.h"
 # include "lizz.h"
 
+// TODO: Remove struct in global
 static lizz_t *configure(void)
 {
 	lizz_t *conf = malloc(sizeof(lizz_t));
