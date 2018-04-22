@@ -21,6 +21,7 @@ void lizz_object_creation(void)
 	int user_data = 8;
 
 	lizz_btn_create("btn_play", stMain);
+	lizz_btn_create("btn_settings", stMain);
 	lizz_thread_create("thread_animation", &func_thread, &user_data);
 }
 
