@@ -34,12 +34,12 @@ static void fill_node_values(btn_t *node, btn_t values)
 	node->next = NULL;
 }
 
-static bool new_btn_node(btn_t values)
+static bool new_btn_node(lizz_t *st, btn_t values)
 {
-	btn_t **btns = &lizz->btn;
+	btn_t **btns = &st->btn;
 	btn_t *node = NULL;
 
-	if (lizz->btn == NULL) {
+	if (st->btn == NULL) {
 		node = malloc(sizeof(btn_t));
 		fill_node_values(node, values);
 		node->next = *btns;
@@ -47,7 +47,7 @@ static bool new_btn_node(btn_t values)
 		return (true);
 	}
 
-	node = lizz->btn;
+	node = st->btn;
 	while (node->next != NULL)
 		node = node->next;
 
@@ -64,7 +64,7 @@ static bool new_btn_node(btn_t values)
 ** @param (menu_e belongsTo) - Scene a laquelle le bouton appartient
 ** @return (int) - Retourne -1 si il y a une erreur, et 0 autrement
 */
-int lizz_btn_create(char *name, menu_e belongsTo)
+int lizz_btn_create(lizz_t *st, char *name, menu_e belongsTo)
 {
 	btn_t btn;
 
@@ -75,7 +75,7 @@ int lizz_btn_create(char *name, menu_e belongsTo)
 
 	btn.name = name;
 	btn.belongsTo = belongsTo;
-	if (!new_btn_node(btn))
+	if (!new_btn_node(st, btn))
 		return (-1);
 
 	return (0);
@@ -88,9 +88,9 @@ int lizz_btn_create(char *name, menu_e belongsTo)
 ** @return (btn_t) - Retourne NULL si aucun bouton n'est trouvé, et
 ** retourne le bouton si correspondant au nom et à la scene donnée
 */
-btn_t *lizz_get_btn(char *name, menu_e belongsTo)
+btn_t *lizz_get_btn(lizz_t *st, char *name, menu_e belongsTo)
 {
-	btn_t *tmp = lizz->btn;
+	btn_t *tmp = st->btn;
 
 	while (tmp != NULL) {
 		if (strcmp(tmp->name, name) == 0) { // TODO: Forbidden function

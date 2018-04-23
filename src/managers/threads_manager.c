@@ -35,12 +35,12 @@ static void fill_node_values(thread_t *node, thread_t values, void *data)
 	node->next = NULL;
 }
 
-static bool new_thread_node(thread_t values, void *data)
+static bool new_thread_node(lizz_t *st, thread_t values, void *data)
 {
-	thread_t **threads = &lizz->thread;
+	thread_t **threads = &st->thread;
 	thread_t *node = NULL;
 
-	if (lizz->thread == NULL) {
+	if (st->thread == NULL) {
 		node = malloc(sizeof(thread_t));
 		fill_node_values(node, values, data);
 		node->next = *threads;
@@ -48,7 +48,7 @@ static bool new_thread_node(thread_t values, void *data)
 		return (true);
 	}
 
-	node = lizz->thread;
+	node = st->thread;
 	while (node->next != NULL)
 		node = node->next;
 
@@ -66,7 +66,7 @@ static bool new_thread_node(thread_t values, void *data)
 ** @param (void *data) - User data (see SFML documentation)
 **  @return (int) - Retourne -1 si erreur et 0 si pas d'erreurs
 */
-int lizz_thread_create(char *name, void (*callback)(void *), void *data)
+int lizz_thread_create(lizz_t *st, char *name, void (*c)(void *), void *d)
 {
 	thread_t thread;
 
@@ -76,9 +76,9 @@ int lizz_thread_create(char *name, void (*callback)(void *), void *data)
 	}
 
 	thread.name = name;
-	thread.callback = callback;
+	thread.callback = c;
 
-	if (!new_thread_node(thread, data))
+	if (!new_thread_node(st, thread, d))
 		return (-1);
 
 	return (0);
@@ -90,9 +90,9 @@ int lizz_thread_create(char *name, void (*callback)(void *), void *data)
 ** @return (thread_t) - Retourne NULL si aucun thread ne correspond
 ** au nom donné en argument, sinon retourne le thread correspondant
 */
-thread_t *lizz_get_thread(char *name)
+thread_t *lizz_get_thread(lizz_t *st, char *name)
 {
-	thread_t *tmp = lizz->thread;
+	thread_t *tmp = st->thread;
 
 	while (tmp != NULL) {
 		if (strcmp(tmp->name, name) == 0) { // TODO: Forbidden function

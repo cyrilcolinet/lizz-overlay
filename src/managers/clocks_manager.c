@@ -33,12 +33,12 @@ static void fill_node_values(clk_t *node, clk_t values)
 	node->next = NULL;
 }
 
-static bool new_clk_node(clk_t values)
+static bool new_clk_node(lizz_t *st, clk_t values)
 {
-	clk_t **clks = &lizz->clock;
+	clk_t **clks = &st->clock;
 	clk_t *node = NULL;
 
-	if (lizz->clock == NULL) {
+	if (st->clock == NULL) {
 		node = malloc(sizeof(clk_t));
 		fill_node_values(node, values);
 		node->next = *clks;
@@ -46,7 +46,7 @@ static bool new_clk_node(clk_t values)
 		return (true);
 	}
 
-	node = lizz->clock;
+	node = st->clock;
 	while (node->next != NULL)
 		node = node->next;
 
@@ -62,7 +62,7 @@ static bool new_clk_node(clk_t values)
 ** @param (char *name) - Nom/ID de la clock
 ** @return (int) - Retourne -1 s'il y a erreur, et 0 si non
 */
-int lizz_clock_create(char *name)
+int lizz_clock_create(lizz_t *st, char *name)
 {
 	clk_t clk;
 
@@ -72,7 +72,7 @@ int lizz_clock_create(char *name)
 	}
 
 	clk.name = name;
-	if (!new_clk_node(clk))
+	if (!new_clk_node(st, clk))
 		return (-1);
 
 	return (0);
@@ -84,9 +84,9 @@ int lizz_clock_create(char *name)
 ** @return (clk_t) - Retourne NULL si clock non trouvée, et retourne
 ** la clock trouvée autrement
 */
-clk_t *lizz_get_clock(char *name)
+clk_t *lizz_get_clock(lizz_t *st, char *name)
 {
-	clk_t *tmp = lizz->clock;
+	clk_t *tmp = st->clock;
 
 	while (tmp != NULL) {
 		if (strcmp(tmp->name, name) == 0) { // TODO: Forbidden function
