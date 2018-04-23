@@ -9,28 +9,54 @@
 # include "debug.h"
 # include "lizz.h"
 
-static thread_t *new_thread_node(void)
+static thread_t *set_functions(thread_t *thread)
 {
-	thread_t **tmp = &lizz->thread;
+	thread->destroy = &lizz_thread_destroy;
+	thread->wait = &lizz_thread_wait;
+	thread->start = &lizz_thread_start;
+	thread->terminate = &lizz_thread_terminate;
 
-	while (*tmp != NULL)
-		*tmp = (*tmp)->next;
-
-	*tmp = malloc(sizeof(thread_t));
-
-	if (*tmp == NULL) {
-		lizz_error("Unable to alloc thread_t: Out of memory.\n");
-		return (NULL);
-	}
-
-	return (*tmp);
-}
-
-static void print_created(thread_t *thread)
-{
 	lizz_info("Thread \"");
 	lizz_print(1, thread->name);
 	lizz_print(1, "\" created.\n");
+
+	return (thread);
+}
+
+static void fill_node_values(thread_t *node, thread_t values, void *data)
+{
+	node->name = values.name;
+	node->thread = sfThread_create(values.callback, data);
+	if (node->thread == NULL) {
+		lizz_error("Error during creation of thread.\n");
+	}
+
+	node = set_functions(node);
+	node->next = NULL;
+}
+
+static bool new_thread_node(thread_t values, void *data)
+{
+	thread_t **threads = &lizz->thread;
+	thread_t *node = NULL;
+
+	if (lizz->thread == NULL) {
+		node = malloc(sizeof(thread_t));
+		fill_node_values(node, values, data);
+		node->next = *threads;
+		*threads = node;
+		return (true);
+	}
+
+	node = lizz->thread;
+	while (node->next != NULL)
+		node = node->next;
+
+	node->next = malloc(sizeof(thread_t));
+	if (node->next == NULL)
+		return (false);
+	fill_node_values(node->next, values, data);
+	return (true);
 }
 
 /*
@@ -42,24 +68,18 @@ static void print_created(thread_t *thread)
 */
 int lizz_thread_create(char *name, void (*callback)(void *), void *data)
 {
-	thread_t *thread = NULL;
+	thread_t thread;
 
 	if (!name || lizz_strlen(name) == 0) {
 		lizz_error("name must be not empty.\n");
 		return (-1);
 	}
 
-	thread = new_thread_node();
-	if (!thread)
+	thread.name = name;
+	thread.callback = callback;
+
+	if (!new_thread_node(thread, data))
 		return (-1);
-	thread->name = name;
-	thread->thread = sfThread_create(callback, data);
-	thread->destroy = &lizz_thread_destroy;
-	thread->wait = &lizz_thread_wait;
-	thread->start = &lizz_thread_start;
-	thread->terminate = &lizz_thread_terminate;
-	thread->next = NULL;
-	print_created(thread);
 
 	return (0);
 }
